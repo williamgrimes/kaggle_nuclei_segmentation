@@ -1,0 +1,10 @@
+username=$(whoami)
+
+# project root path
+export ROOT_FOLDER=$PWD
+
+# project data path
+export DATA_FOLDER=$ROOT_FOLDER"/data/"
+
+# location of models 
+export MODEL_FOLDER=$ROOT_FOLDER"/models/"
