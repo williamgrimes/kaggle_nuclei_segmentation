@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# csv files
+*.csv
+
 # image files
 *.png
 
