@@ -13,16 +13,16 @@ def get_training_data_path():
     file_path = os.environ['DATA_FOLDER'] + 'stage1_train/'
     return file_path
 
-def get_save_path():
-    "gets the path to output images"
-    save_path = os.environ['OUTPUT_FOLDER']
-    return save_path
-
 def get_image_ids(path):
     "returns a list of images at path"
     image_ids = sorted([f for f in os.listdir(path) \
                         if not f.startswith('.')])
     return image_ids
+
+def get_output_path():
+    "gets the path to output images"
+    output_path = os.environ['OUTPUT_FOLDER']
+    return output_path
 
 def label_mask(mask):
     ''' mask out backgroundm extract connected objects and label'''
@@ -36,7 +36,7 @@ def label_ground_truth_masks():
     ''' labels masks of training data and saves'''
     file_path = get_training_data_path()
     image_ids = get_image_ids(file_path)
-    save_path = get_save_path() + "/labelled_ground_truth/"
+    output_path = get_output_path() + "/labelled_ground_truth/"
 
     for idx, image_id in enumerate(image_ids):
         masks = file_path + image_id +  "/masks/*.png"
@@ -48,7 +48,7 @@ def label_ground_truth_masks():
         for index in range(0, num_masks):
             labels[masks[index] > 0] = index + 1
 
-        imsave(save_path + image_id + '.png', labels)
+        imsave(output_path + image_id + '.png', labels)
 
         print('saved image %d of %d, image: %s \n' % \
               (idx + 1, len(image_ids), image_id)) 
@@ -57,7 +57,7 @@ def ground_truth_annotate():
     "annotates images by showing ground truth contours from masks"
     file_path = get_training_data_path()
     image_ids = get_image_ids(file_path)
-    save_path = get_save_path() +  "/annotated_ground_truth/"
+    output_path = get_output_path() +  "/annotated_ground_truth/"
 
     for idx, image_id in enumerate(image_ids):
         image_dir = file_path + image_id + "/images/" + \
@@ -76,7 +76,7 @@ def ground_truth_annotate():
                                             outline_color=None,
                                             mode='outer')
 
-        imsave(save_path + image_id + '.png', image_overlay)
+        imsave(output_path + image_id + '.png', image_overlay)
 
         print('saved image %d of %d, image: %s \n' % \
               (idx + 1, len(image_ids), image_id))
