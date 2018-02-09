@@ -1,10 +1,13 @@
 username=$(whoami)
 
 # project root path
-export ROOT_FOLDER=$PWD
+export ROOT_FOLDER='/home/'$username'/nuclei_segmentation/'
 
 # project data path
-export DATA_FOLDER=$ROOT_FOLDER"/data/"
+export DATA_FOLDER=$ROOT_FOLDER"data/"
 
 # location of models 
-export MODEL_FOLDER=$ROOT_FOLDER"/models/"
+export MODEL_FOLDER=$ROOT_FOLDER"models/"
+
+# project output data
+export OUTPUT_FOLDER=$ROOT_FOLDER"output/"
