@@ -33,7 +33,7 @@ def segment_image(image):
 
 file_path = utils.imaging.get_training_data_path()
 image_ids = utils.imaging.get_image_ids(file_path)
-save_path = utils.imaging.get_save_path() +  "/labelled_segmented/"
+output_path = utils.imaging.get_output_path() +  "/labelled_segmented/"
 
 for idx, image_id in enumerate(image_ids):
     image_dir = file_path + image_id + "/images/" + \
@@ -44,7 +44,7 @@ for idx, image_id in enumerate(image_ids):
 
     labels = utils.imaging.label_mask(mask)
 
-    imsave(save_path + image_id + '.png', labels)
+    imsave(output_path + image_id + '.png', labels)
 
     print('saved image %d of %d, image: %s \n' % \
           (idx + 1, len(image_ids), image_id))
