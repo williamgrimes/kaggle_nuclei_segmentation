@@ -14,7 +14,7 @@ import glob
 import skimage
 import numpy as np
 
-import utils.imaging
+from utils import imaging
 
 from skimage.color import rgba2rgb, rgb2gray
 from skimage.io import imread, imsave
@@ -30,19 +30,18 @@ def segment_image(image):
     mask = morphology.remove_small_holes(mask, min_size=20)
     return mask
 
-
-file_path = utils.imaging.get_training_data_path()
-image_ids = utils.imaging.get_image_ids(file_path)
-output_path = utils.imaging.get_output_path() +  "/labelled_segmented/"
+train_data_dir = imaging.get_path('training_data')
+image_ids = imaging.get_image_ids(train_data_dir)
+output_path = imaging.get_path('output') +  "labelled_segmented/"
 
 for idx, image_id in enumerate(image_ids):
-    image_dir = file_path + image_id + "/images/" + \
+    image_dir = train_data_dir + image_id + "/images/" + \
                 image_id + ".png"
     image = skimage.io.imread(image_dir)
 
     mask = segment_image(image)
 
-    labels = utils.imaging.label_mask(mask)
+    labels = imaging.label_mask(mask)
 
     imsave(output_path + image_id + '.png', labels)
 

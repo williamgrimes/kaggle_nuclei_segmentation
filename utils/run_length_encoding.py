@@ -2,6 +2,7 @@ import pandas as pd
 import pathlib
 import imageio
 import numpy as np
+import skimage
 
 import imaging
 
@@ -14,62 +15,48 @@ def rle_encoding(x):
     x: numpy array of shape (height, width), 1 - mask, 0 - background
     Returns run length as list
     '''
-    dots = np.where(x.T.flatten()==1)[0] # .T sets Fortran order down-then-right
+    dots = np.where(x.T.flatten()==1)[0]
     run_lengths = []
     prev = -2
     for b in dots:
-        if (b>prev+1): run_lengths.extend((b+1, 0))
+        if (b > prev+1): run_lengths.extend((b+1, 0))
         run_lengths[-1] += 1
         prev = b
     return " ".join([str(i) for i in run_lengths])
 
 
-def analyze_image(im_path):
+def rle_image(labels_image, image_id):
     '''
-    Take an image_path (pathlib.Path object), preprocess and label it, extract the RLE strings
-    and dump it into a Pandas DataFrame.
+    take a labelled image and image id then perform rle and return a pandas dataframe
     '''
-    # Read in data and convert to grayscale
-    im_id = im_path.parts[-3]
-    im = imageio.imread(str(im_path))
-    im_gray = rgb2gray(im)
-
-    # Mask out background and extract connected objects
-    thresh_val = threshold_otsu(im_gray)
-    mask = np.where(im_gray > thresh_val, 1, 0)
-    if np.sum(mask==0) < np.sum(mask==1):
-        mask = np.where(mask, 0, 1)
-        labels, nlabels = ndimage.label(mask)
-    labels, nlabels = ndimage.label(mask)
-
-    # Loop through labels and add each to a DataFrame
-    im_df = pd.DataFrame(columns=['ImageId','EncodedPixels'])
-    for label_num in range(1, nlabels+1):
-        label_mask = np.where(labels == label_num, 1, 0)
+    num_labels = np.amax(labels_image)
+    df_image = pd.DataFrame(columns=['ImageId','EncodedPixels'])
+    for label_num in range(1, num_labels+1):
+        label_mask = np.where(labels_image == label_num, 1, 0)
         if label_mask.flatten().sum() > 10:
             rle = rle_encoding(label_mask)
-            s = pd.Series({'ImageId': im_id, 'EncodedPixels': rle})
-            im_df = im_df.append(s, ignore_index=True)
-    return im_df
+            rle_series = pd.Series({'ImageId': image_id[:-4], 'EncodedPixels': rle})
+            df_image = df_image.append(rle_series, ignore_index=True)
+    return df_image
 
 
-def analyze_list_of_images(im_path_list):
+def rle_images_in_dir(file_path):
     '''
-    Takes a list of image paths (pathlib.Path objects), analyzes each,
-    and returns a submission-ready DataFrame.'''
-    all_df = pd.DataFrame()
-    for idx, im_path in enumerate(im_path_list):
-        im_df = analyze_image(im_path)
-        all_df = all_df.append(im_df, ignore_index=True)
+    performs rle on all images in a directory given by file_path
+    '''
+    image_ids = imaging.get_image_ids(file_path)
+    output_path = imaging.get_path('output')
+
+    df_all = pd.DataFrame()
+    for idx, image_id in enumerate(image_ids):
+        image_dir = file_path + image_id
+        image = skimage.io.imread(image_dir)
+        df_image = rle_image(image, image_id)
+        df_all = df_all.append(df_image, ignore_index=True)
         print('encoded image %d of %d, image: %s \n' % \
-             (idx + 1, len(im_path_list), im_path))
-    return all_df
+             (idx + 1, len(image_ids), image_id[:-4]))
+    return df_all
 
 if __name__ == '__main__':
-    filepath = imaging.get_training_data_path()
-    print(filepath)
-    training = pathlib.Path(filepath).glob('*/images/*.png')
-    df = analyze_list_of_images(list(training))
+    df = rle_images_in_dir(imaging.get_path('output') + 'labelled_segmented/')
     df.to_csv('submission.csv', index=None)
-    #for i in training:
-        #print(i)

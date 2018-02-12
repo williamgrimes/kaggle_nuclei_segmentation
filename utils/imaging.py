@@ -8,24 +8,29 @@ from skimage.color import rgba2rgb
 from skimage.io import imread, imsave
 from skimage.segmentation import mark_boundaries
 
-def get_training_data_path():
-    "gets the path to the training data directory"
-    file_path = os.environ['DATA_FOLDER'] + 'stage1_train/'
-    return file_path
+
+def get_path(dir_type='project'):
+    if dir_type == 'project':
+        return os.environ['NUC_SEG_DIR']
+    if dir_type == 'data':
+        return os.environ['NUC_SEG_DIR'] + '/data/'
+    if dir_type == 'training_data':
+        return os.environ['NUC_SEG_DIR'] + '/data/stage1_train/'
+    if dir_type == 'envs':
+        return os.environ['NUC_SEG_DIR'] + '/data/envs/'
+    if dir_type == 'output':
+        return os.environ['NUC_SEG_DIR'] + '/output/'
+    if dir_type == 'models':
+        return os.environ['NUC_SEG_DIR'] + '/models/'
 
 def get_image_ids(path):
-    "returns a list of images at path"
+    "returns a list of images at path to train or test data"
     image_ids = sorted([f for f in os.listdir(path) \
                         if not f.startswith('.')])
     return image_ids
 
-def get_output_path():
-    "gets the path to output images"
-    output_path = os.environ['OUTPUT_FOLDER']
-    return output_path
-
 def label_mask(mask):
-    ''' mask out backgroundm extract connected objects and label'''
+    ''' mask out background extract connected objects and label'''
     if np.sum(mask==0) < np.sum(mask==1):
         mask = np.where(mask, 0, 1)
         labels, nlabels = ndimage.label(mask)
@@ -34,12 +39,12 @@ def label_mask(mask):
 
 def label_ground_truth_masks():
     ''' labels masks of training data and saves'''
-    file_path = get_training_data_path()
-    image_ids = get_image_ids(file_path)
-    output_path = get_output_path() + "/labelled_ground_truth/"
+    train_data_dir = get_path('training_data')
+    image_ids = get_image_ids(train_data_dir)
+    output_path = get_path('output') +  "labelled_ground_truth/"
 
     for idx, image_id in enumerate(image_ids):
-        masks = file_path + image_id +  "/masks/*.png"
+        masks = train_data_dir + image_id +  "/masks/*.png"
         masks = skimage.io.imread_collection(masks).concatenate()
 
         num_masks, height, width = masks.shape
@@ -51,13 +56,12 @@ def label_ground_truth_masks():
         imsave(output_path + image_id + '.png', labels)
 
         print('saved image %d of %d, image: %s \n' % \
-              (idx + 1, len(image_ids), image_id)) 
+              (idx + 1, len(image_ids), image_id))
 
-def ground_truth_annotate():
+def ground_truth_annotate(file_path):
     "annotates images by showing ground truth contours from masks"
-    file_path = get_training_data_path()
     image_ids = get_image_ids(file_path)
-    output_path = get_output_path() +  "/annotated_ground_truth/"
+    output_path = get_path('output') + "annotated_ground_truth/"
 
     for idx, image_id in enumerate(image_ids):
         image_dir = file_path + image_id + "/images/" + \
@@ -83,4 +87,4 @@ def ground_truth_annotate():
 
 if __name__ == '__main__':
     label_ground_truth_masks()
-    ground_truth_annotate()
+    ground_truth_annotate(get_path('training_data'))

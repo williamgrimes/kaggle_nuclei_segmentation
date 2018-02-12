@@ -1,13 +1,2 @@
-username=$(whoami)
-
 # project root path, set as location of current file
-PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-# project data path
-DATA_DIR=$PROJECT_DIR"data/"
-
-# location of models 
-MODEL_DIR=$PROJECT_DIR"models/"
-
-# project output data
-OUTPUT_DIR=$PROJECT_DIR"output/"
+export NUC_SEG_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
