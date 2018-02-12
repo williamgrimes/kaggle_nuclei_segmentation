@@ -3,6 +3,8 @@ import pathlib
 import imageio
 import numpy as np
 
+import imaging
+
 from scipy import ndimage
 from skimage.color import rgb2gray
 from skimage.filters import threshold_otsu
@@ -41,14 +43,13 @@ def analyze_image(im_path):
     labels, nlabels = ndimage.label(mask)
 
     # Loop through labels and add each to a DataFrame
-    im_df = pd.DataFrame()
+    im_df = pd.DataFrame(columns=['ImageId','EncodedPixels'])
     for label_num in range(1, nlabels+1):
         label_mask = np.where(labels == label_num, 1, 0)
         if label_mask.flatten().sum() > 10:
             rle = rle_encoding(label_mask)
             s = pd.Series({'ImageId': im_id, 'EncodedPixels': rle})
             im_df = im_df.append(s, ignore_index=True)
-
     return im_df
 
 
@@ -57,12 +58,18 @@ def analyze_list_of_images(im_path_list):
     Takes a list of image paths (pathlib.Path objects), analyzes each,
     and returns a submission-ready DataFrame.'''
     all_df = pd.DataFrame()
-    for im_path in im_path_list:
+    for idx, im_path in enumerate(im_path_list):
         im_df = analyze_image(im_path)
         all_df = all_df.append(im_df, ignore_index=True)
-
+        print('encoded image %d of %d, image: %s \n' % \
+             (idx + 1, len(im_path_list), im_path))
     return all_df
 
-training = pathlib.Path('./stage1_train/').glob('*/images/*.png')
-df = analyze_list_of_images(list(training))
-df.to_csv('submission.csv', index=None)
+if __name__ == '__main__':
+    filepath = imaging.get_training_data_path()
+    print(filepath)
+    training = pathlib.Path(filepath).glob('*/images/*.png')
+    df = analyze_list_of_images(list(training))
+    df.to_csv('submission.csv', index=None)
+    #for i in training:
+        #print(i)
