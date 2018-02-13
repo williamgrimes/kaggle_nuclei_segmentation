@@ -54,9 +54,9 @@ def evaluate_image(ground_truth, segmented):
     return score
 
 def evaluate_images():
-    file_path = imaging.get_training_data_path()
+    file_path = imaging.get_path('training_data')
     image_ids = imaging.get_image_ids(file_path)
-    output_path = imaging.get_output_path()
+    output_path = imaging.get_path('output')
     mean_score = []
     for idx, image_id in enumerate(image_ids):
         ground_truth_path = output_path + "/labelled_ground_truth/" + \
