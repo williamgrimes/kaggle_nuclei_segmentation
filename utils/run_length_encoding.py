@@ -12,8 +12,12 @@ from skimage.filters import threshold_otsu
 
 def rle_encoding(x):
     '''
-    x: numpy array of shape (height, width), 1 - mask, 0 - background
-    Returns run length as list
+    Performs run length encoding on an array
+
+    Arguments:
+        x: numpy array of shape (height, width), 1 - mask, 0 - background
+    Returns:
+        run length as list
     '''
     dots = np.where(x.T.flatten()==1)[0]
     run_lengths = []
@@ -27,7 +31,12 @@ def rle_encoding(x):
 
 def rle_image(labels_image, image_id):
     '''
-    take a labelled image and image id then perform rle and return a pandas dataframe
+    Take a labelled image and image id then perform rle and return a pandas dataframe
+
+    Arguments:
+        labels_image: a sequentially labelled image
+    Return:
+        df_image: data frame of ImageId, Encoding
     '''
     num_labels = np.amax(labels_image)
     df_image = pd.DataFrame(columns=['ImageId','EncodedPixels'])
@@ -42,7 +51,10 @@ def rle_image(labels_image, image_id):
 
 def rle_images_in_dir(file_path):
     '''
-    performs rle on all images in a directory given by file_path
+    Performs rle on all labelled images in a directory given by file_path
+
+    Arguments:
+        file_path: path to directory containing labelled_images
     '''
     image_ids = imaging.get_image_ids(file_path)
     output_path = imaging.get_path('output')
@@ -59,5 +71,5 @@ def rle_images_in_dir(file_path):
 
 if __name__ == '__main__':
     output_path = imaging.get_path('output')
-    df = rle_images_in_dir(output_path + 'train/labelled_segmented/')
-    df.to_csv(output_path + 'train/' + 'rle_submission.csv', index=None)
+    df = rle_images_in_dir(output_path + 'test/labelled_segmented/')
+    df.to_csv(output_path + 'test/' + 'rle_submission.csv', index=None)
