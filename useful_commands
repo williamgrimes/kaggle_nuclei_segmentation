@@ -1,0 +1,3 @@
+find -wholename */images/*.png -exec cp {} train_images \;
+
+montage *.png -resize 40% -geometry +0+0 -background black  ../montage.png
