@@ -3,14 +3,14 @@ import skimage.io
 import skimage.segmentation
 import os
 import sys
-import imaging
+import utils.imaging as imaging
 
 def calculate_iou(ground_truth, segmented):
     # calculate number of objects
     true_objects = len(np.unique(ground_truth))
     pred_objects = len(np.unique(segmented))
-    print("# true nuclei:", true_objects)
-    print("# predicted pred:", pred_objects)
+    print("# true nuclei:", true_objects - 1)
+    print("# predicted pred:", pred_objects - 1)
 
     # compute intersection between all objects
     intersection = np.histogram2d(ground_truth.flatten(), segmented.flatten(),\
@@ -46,9 +46,12 @@ def precision_at_iou(threshold, iou):
 def evaluate_image(ground_truth, segmented):
     iou = calculate_iou(ground_truth, segmented)
     prec = []
+
+    print("\n{}\t{}\t{}\t{}\t{}".format('thresh', 'tp', 'fp', 'fn', 'p'))
     for t in np.arange(0.5, 1.0, 0.05):
         tp, fp, fn = precision_at_iou(t, iou)
         p = tp / (tp + fp + fn)
+        print("{:1.3f}\t{}\t{}\t{}\t{:1.3f}".format(t, tp, fp, fn, p))
         prec.append(p)
     score = np.mean(prec)
     return score
@@ -59,7 +62,7 @@ def evaluate_images():
     output_path = imaging.get_path('output')
     mean_score = []
     for idx, image_id in enumerate(image_ids):
-        ground_truth_path = output_path + "/labelled_ground_truth/" + \
+        ground_truth_path = output_path + "labelled_ground_truth/" + \
                             image_id + ".png"
         ground_truth = skimage.io.imread(ground_truth_path)
         segmented_path = output_path + "/labelled_segmented/" + \
@@ -69,7 +72,7 @@ def evaluate_images():
         mean_score.append(score)
         print("image: " + str(idx) + " of " + str(len(image_ids)) + \
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
-    mean_score = np.mean(mean_score)
+    #mean_score = np.mean(mean_score)
     return mean_score
 
 if __name__ == '__main__':

@@ -58,5 +58,6 @@ def rle_images_in_dir(file_path):
     return df_all
 
 if __name__ == '__main__':
-    df = rle_images_in_dir(imaging.get_path('output') + 'labelled_segmented/')
-    df.to_csv('submission.csv', index=None)
+    output_path = imaging.get_path('output')
+    df = rle_images_in_dir(output_path + 'train/labelled_segmented/')
+    df.to_csv(output_path + 'train/' + 'rle_submission.csv', index=None)
