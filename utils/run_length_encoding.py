@@ -4,7 +4,7 @@ import imageio
 import numpy as np
 import skimage
 
-import imaging
+from utils.imaging import get_path, get_image_ids
 
 from scipy import ndimage
 from skimage.color import rgb2gray
@@ -49,27 +49,29 @@ def rle_image(labels_image, image_id):
     return df_image
 
 
-def rle_images_in_dir(file_path):
+def rle_images_in_dir(image_type='test', stage_num = 1):
     '''
-    Performs rle on all labelled images in a directory given by file_path
+    Performs rle on all labelled images in a directory
 
     Arguments:
-        file_path: path to directory containing labelled_images
+        image_type: training or test data
+        stage_num: stage number of the data
     '''
-    image_ids = imaging.get_image_ids(file_path)
-    output_path = imaging.get_path('output')
+    stage_num = str(stage_num)
+    input_path = get_path('output_' + image_type + '_' + stage_num + '_lab_seg')
+    image_ids = get_image_ids(input_path)
+    output_path = get_path('output_' + image_type + '_' + stage_num)
 
     df_all = pd.DataFrame()
     for idx, image_id in enumerate(image_ids):
-        image_dir = file_path + image_id
+        image_dir = input_path + image_id
         image = skimage.io.imread(image_dir)
         df_image = rle_image(image, image_id)
         df_all = df_all.append(df_image, ignore_index=True)
         print('encoded image %d of %d, image: %s \n' % \
              (idx + 1, len(image_ids), image_id[:-4]))
+    df_all.to_csv(output_path + 'rle_submission.csv', index=None)
     return df_all
 
 if __name__ == '__main__':
-    output_path = imaging.get_path('output')
-    df = rle_images_in_dir(output_path + 'test/labelled_segmented/')
-    df.to_csv(output_path + 'test/' + 'rle_submission.csv', index=None)
+    df = rle_images_in_dir(image_type = 'test', stage_num = 1)

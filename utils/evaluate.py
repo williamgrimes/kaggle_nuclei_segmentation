@@ -5,6 +5,8 @@ import os
 import sys
 import utils.imaging as imaging
 
+from utils.imaging import get_path, get_image_ids
+
 def calculate_iou(ground_truth, segmented):
     # calculate number of objects
     true_objects = len(np.unique(ground_truth))
@@ -56,17 +58,18 @@ def evaluate_image(ground_truth, segmented):
     score = np.mean(prec)
     return score
 
-def evaluate_images():
-    file_path = imaging.get_path('training_data')
-    image_ids = imaging.get_image_ids(file_path)
-    output_path = imaging.get_path('output')
+def evaluate_images(stage_num = 1):
+    stage_num = str(stage_num)
+    file_path = get_path('data_train_' + stage_num)
+    image_ids = get_image_ids(file_path)
+    label_ground_truth = get_path('output_train_' + stage_num + '_lab_gt')
+    label_segmented = get_path('output_train_' + stage_num + '_lab_seg')
+
     mean_score = []
     for idx, image_id in enumerate(image_ids):
-        ground_truth_path = output_path + "labelled_ground_truth/" + \
-                            image_id + ".png"
+        ground_truth_path = label_ground_truth + image_id + ".png"
         ground_truth = skimage.io.imread(ground_truth_path)
-        segmented_path = output_path + "/labelled_segmented/" + \
-                         image_id + ".png"
+        segmented_path = label_segmented + image_id + ".png"
         segmented = skimage.io.imread(segmented_path)
         score = evaluate_image(ground_truth, segmented)
         mean_score.append(score)

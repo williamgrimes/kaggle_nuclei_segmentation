@@ -14,7 +14,12 @@ import glob
 import skimage
 import numpy as np
 
-from utils import imaging
+import subprocess
+
+import utils.imaging
+import utils.run_length_encoding
+import utils.evaluate
+from utils.imaging import label_mask, get_path, get_image_ids
 
 from skimage.color import rgba2rgb, rgb2gray
 from skimage.io import imread, imsave
@@ -31,22 +36,18 @@ def segment_image(image):
     mask = morphology.remove_small_holes(mask, min_size=20)
     return mask
 
-def apply_segmentation_images(image_type='train'):
-    if image_type == 'train':
-        data_dir = imaging.get_path('training_data')
-        output_path = imaging.get_path('output') + image_type + "/labelled_segmented/"
-    if image_type == 'test':
-        data_dir = imaging.get_path('test_data')
-        output_path = imaging.get_path('output') + image_type + "/labelled_segmented/"
-
-    image_ids = imaging.get_image_ids(data_dir)
+def apply_segmentation_images(image_type='train', stage_num = 1):
+    stage_num = str(stage_num)
+    file_path = get_path('data_' + image_type + '_' + stage_num)
+    image_ids = get_image_ids(file_path)
+    output_path = get_path('output_' + image_type + '_' + stage_num + '_lab_seg')
 
     for idx, image_id in enumerate(image_ids):
-        image_dir = data_dir + image_id + "/images/" + \
+        image_dir = file_path + image_id + "/images/" + \
                     image_id + ".png"
         image = skimage.io.imread(image_dir)
         mask = segment_image(image)
-        labels = imaging.label_mask(mask)
+        labels = label_mask(mask)
         imsave(output_path + image_id + '.png', labels)
         print('saved image %d of %d, image: %s \n' % \
               (idx + 1, len(image_ids), image_id))
@@ -55,3 +56,9 @@ def apply_segmentation_images(image_type='train'):
 if __name__ == '__main__':
     apply_segmentation_images('train')
     apply_segmentation_images('test')
+    utils.imaging.label_ground_truth_masks(1)
+    utils.imaging.ground_truth_annotate(1)
+    utils.imaging.segmented_annotate(image_type = 'train', stage_num = 1)
+    utils.imgaging.segmented_annotate(image_type = 'test', stage_num = 1)
+    df = utils.run_length_encoding.rle_images_in_dir(image_type = 'test', stage_num = 1)
+    score = utils.evaluate.evaluate_images(
