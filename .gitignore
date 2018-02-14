@@ -3,14 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# csv files
-*.csv
-
-# image files
-*.png
-
 # C extensions
 *.so
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# others
+*.swo
+*.swp
+*.csv
+*.png
