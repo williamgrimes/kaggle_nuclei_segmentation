@@ -4,22 +4,21 @@ import skimage.segmentation
 import os
 import sys
 import utils.imaging as imaging
+import pandas as pd
 
 from utils.imaging import get_path, get_image_ids
 
 
 def calc_intersection(ground_truth,segmented):
     """ Compute intersection between all object. The function
-        np.histogram2d takes the two flattened arrays and 
+        np.histogram2d takes the two flattened arrays and
         compares the values of each position."""
-
     return np.histogram2d(ground_truth.flatten(), segmented.flatten(),\
                bins=(len(np.unique(ground_truth)), len(np.unique(segmented))))[0]
 
 def obj_count(mask):
     """ Compute the pixel count of each object in the image. """
-    
-    return np.histogram(mask, bins = len(np.unique(mask)))[0]                                                                                             
+    return np.histogram(mask, bins = len(np.unique(mask)))[0]
 
 def calculate_iou(ground_truth, segmented):
     # calculate number of objects
@@ -27,7 +26,7 @@ def calculate_iou(ground_truth, segmented):
     pred_objects = len(np.unique(segmented))
     print("# true nuclei:", true_objects - 1)
     print("# predicted pred:", pred_objects - 1)
-    
+
     # computer the intersection between all object
     intersection = calc_intersection(ground_truth,segmented)
     # compute areas needed for finding the union between objects
@@ -77,18 +76,18 @@ def evaluate_images(stage_num = 1):
     label_ground_truth = get_path('output_train_' + stage_num + '_lab_gt')
     label_segmented = get_path('output_train_' + stage_num + '_lab_seg')
 
-    mean_score = []
+    cols = ['image_id', 'score']
+    df_scores = pd.DataFrame(columns = cols)
     for idx, image_id in enumerate(image_ids):
         ground_truth_path = label_ground_truth + image_id + ".png"
         ground_truth = skimage.io.imread(ground_truth_path)
         segmented_path = label_segmented + image_id + ".png"
         segmented = skimage.io.imread(segmented_path)
         score = evaluate_image(ground_truth, segmented)
-        mean_score.append(score)
+        df_scores.append({'image_id': image_id, 'score': score}, ignore_index = True)
         print("image: " + str(idx) + " of " + str(len(image_ids)) + \
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
-    #mean_score = np.mean(mean_score)
-    return mean_score
+    return df_scores
 
 if __name__ == '__main__':
     score = evaluate_images()
