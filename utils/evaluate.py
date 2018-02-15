@@ -7,20 +7,32 @@ import utils.imaging as imaging
 
 from utils.imaging import get_path, get_image_ids
 
+
+def calc_intersection(ground_truth,segmented):
+    """ Compute intersection between all object. The function
+        np.histogram2d takes the two flattened arrays and 
+        compares the values of each position."""
+
+    return np.histogram2d(ground_truth.flatten(), segmented.flatten(),\
+               bins=(len(np.unique(ground_truth)), len(np.unique(segmented))))[0]
+
+def obj_count(mask):
+    """ Compute the pixel count of each object in the image. """
+    
+    return np.histogram(mask, bins = len(np.unique(mask)))[0]                                                                                             
+
 def calculate_iou(ground_truth, segmented):
     # calculate number of objects
     true_objects = len(np.unique(ground_truth))
     pred_objects = len(np.unique(segmented))
     print("# true nuclei:", true_objects - 1)
     print("# predicted pred:", pred_objects - 1)
-
-    # compute intersection between all objects
-    intersection = np.histogram2d(ground_truth.flatten(), segmented.flatten(),\
-                   bins=(true_objects, pred_objects))[0]
-
+    
+    # computer the intersection between all object
+    intersection = calc_intersection(ground_truth,segmented)
     # compute areas needed for finding the union between objects
-    area_true = np.histogram(ground_truth, bins = true_objects)[0]
-    area_pred = np.histogram(segmented, bins = pred_objects)[0]
+    area_true = obj_count(ground_truth)
+    area_pred = obj_count(segmented)
     area_true = np.expand_dims(area_true, -1)
     area_pred = np.expand_dims(area_pred, 0)
 
