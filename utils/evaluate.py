@@ -69,6 +69,43 @@ def evaluate_image(ground_truth, segmented):
     score = np.mean(prec)
     return score
 
+def ap(y_true, y_pred):
+    '''
+    alternative ap calculation
+    https://www.kaggle.com/thomasjpfan/ap-metric
+    '''
+    # remove one for background
+    num_true = len(np.unique(y_true)) - 1
+    num_pred = len(np.unique(y_pred)) - 1
+
+    if num_true == 0 and num_pred == 0:
+        return 1
+    elif num_true == 0 or num_pred == 0:
+        return 0
+
+    # bin size + 1 for background
+    intersect = np.histogram2d(
+        y_true.flatten(), y_pred.flatten(), bins=(num_true+1, num_pred+1))[0]
+
+    area_t = np.histogram(y_true, bins=(num_true+1))[0][:, np.newaxis]
+    area_p = np.histogram(y_pred, bins=(num_pred+1))[0][np.newaxis, :]
+
+    # get rid of background
+    union = area_t + area_p - intersect
+    intersect = intersect[1:, 1:]
+    union = union[1:, 1:]
+    iou = intersect / union
+
+    threshold = np.arange(0.5, 1.0, 0.05)[np.newaxis, np.newaxis, :]
+    matches = iou[:,:, np.newaxis] > threshold
+
+    tp = np.sum(matches, axis=(0,1))
+    fp = num_true - tp
+    fn = num_pred - tp
+
+    return np.mean(tp/(tp+fp+fn))
+
+
 def evaluate_images(stage_num = 1):
     stage_num = str(stage_num)
     file_path = get_path('data_train_' + stage_num)
@@ -83,7 +120,8 @@ def evaluate_images(stage_num = 1):
         ground_truth = skimage.io.imread(ground_truth_path)
         segmented_path = label_segmented + image_id + ".png"
         segmented = skimage.io.imread(segmented_path)
-        score = evaluate_image(ground_truth, segmented)
+        #score = evaluate_image(ground_truth, segmented)
+        score = ap(ground_truth, segmented)
         scores.append([image_id, score])
         print("image: " + str(idx) + " of " + str(len(image_ids)) + \
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
