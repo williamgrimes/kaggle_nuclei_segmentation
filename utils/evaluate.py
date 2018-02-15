@@ -77,16 +77,17 @@ def evaluate_images(stage_num = 1):
     label_segmented = get_path('output_train_' + stage_num + '_lab_seg')
 
     cols = ['image_id', 'score']
-    df_scores = pd.DataFrame(columns = cols)
+    scores = []
     for idx, image_id in enumerate(image_ids):
         ground_truth_path = label_ground_truth + image_id + ".png"
         ground_truth = skimage.io.imread(ground_truth_path)
         segmented_path = label_segmented + image_id + ".png"
         segmented = skimage.io.imread(segmented_path)
         score = evaluate_image(ground_truth, segmented)
-        df_scores.append({'image_id': image_id, 'score': score}, ignore_index = True)
+        scores.append([image_id, score])
         print("image: " + str(idx) + " of " + str(len(image_ids)) + \
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
+    df_scores = pd.DataFrame(scores, columns=cols).round(4)
     return df_scores
 
 if __name__ == '__main__':
