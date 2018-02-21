@@ -14,10 +14,10 @@ def rle_encoding(x):
     '''
     Performs run length encoding on an array
 
-    Arguments:
-        x: numpy array of shape (height, width), 1 - mask, 0 - background
+    Args:
+        x (ndarray): numpy array of shape (height, width), 1 - mask, 0 - background
     Returns:
-        run length as list
+        (list): run length as list
     '''
     dots = np.where(x.T.flatten()==1)[0]
     run_lengths = []
@@ -33,10 +33,10 @@ def rle_image(labels_image, image_id):
     '''
     Take a labelled image and image id then perform rle and return a pandas dataframe
 
-    Arguments:
-        labels_image: a sequentially labelled image
+    Args:
+        labels_image (ndarray): a sequentially labelled image
     Return:
-        df_image: data frame of ImageId, Encoding
+        df_image (dataframe): data frame of ImageId, Encoding
     '''
     num_labels = np.amax(labels_image)
     df_image = pd.DataFrame(columns=['ImageId','EncodedPixels'])
@@ -54,8 +54,9 @@ def rle_images_in_dir(image_type='test', stage_num = 1):
     Performs rle on all labelled images in a directory
 
     Arguments:
-        image_type: training or test data
-        stage_num: stage number of the data
+        image_type (str): training or test data
+        stage_num (int): stage number of the data
+
     '''
     stage_num = str(stage_num)
     input_path = get_path('output_' + image_type + '_' + stage_num + '_lab_seg')

@@ -8,16 +8,18 @@ from skimage.color import rgba2rgb
 from skimage.io import imread, imsave, imread_collection
 from skimage.segmentation import mark_boundaries
 
-
 def get_path(directory='project'):
     '''
-    A function to get relevant project directories
+    A function to get relevant project directories, this relies on having
+    exported the environment variables, adding the project to the python 
+    path.
 
-    Arguments:
-        dir_type e.g. project/data/...
+    Args:
+        directory (str): key for directories dictionary below.
 
     Returns:
-        path to directory as a string
+        path (str): path to directory
+
     '''
     project_dir = os.environ['NUC_SEG_DIR']
     dir_dict = {'project' : '/',
@@ -54,10 +56,11 @@ def get_image_ids(path):
     A function to get list of image ids from a directory containing id files this excludes dotfiles
 
     Arguments:
-        path to directory
+        path (str): path to directory
 
     Returns:
-        list of image ids
+        image_ids (list): list of image ids
+
     '''
     image_ids = sorted([f for f in os.listdir(path) \
                         if not f.startswith('.')])
@@ -68,10 +71,11 @@ def label_mask(mask):
     Uses ndimage function to labels connected components in a binary image mask with sequential values 
 
     Arguments:
-        mask as numpy array
+        mask (ndarray): mask image as numpy array
 
     Returns:
-        array of labels as numpy array
+        labels (ndarray): array of labels as numpy array
+
     '''
     if np.sum(mask==0) < np.sum(mask==1):
         mask = np.where(mask, 0, 1)
@@ -84,7 +88,8 @@ def label_ground_truth_masks(stage_num = 1):
     Iterates over ground truth training masks and labels saving output labelled images
 
     Arguments:
-        training_data = 1 or 2 depending on whether stage1 or stage2
+        stage_num (int): 1 or 2 depending on whether stage1 or stage2
+
     '''
     stage_num = str(stage_num)
     train_data_dir = get_path('data_train_' + stage_num)
@@ -108,7 +113,8 @@ def label_ground_truth_masks(stage_num = 1):
 
 def ground_truth_annotate(stage_num = 1):
     '''
-    Annotates by marking boundaries in training ground truth images from masks, and saves output
+    Annotates by marking boundaries in training ground truth images from masks, and saves output.
+
     '''
     stage_num = str(stage_num)
     train_data_dir = get_path('data_train_' + stage_num)
@@ -141,9 +147,10 @@ def segmented_annotate(image_type='train', stage_num = 1):
     '''
     Annotates by marking boundaries in segmented images from labelled images, and saves output
 
-    Arguments:
+    Args:
         image_type: 'train' or 'test
         stage_num: stage number 1 or 2
+
     '''
     stage_num = str(stage_num)
     file_path = get_path('data_' + image_type + '_' + stage_num)

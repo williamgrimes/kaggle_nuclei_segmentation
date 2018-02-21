@@ -10,17 +10,42 @@ from utils.imaging import get_path, get_image_ids
 
 
 def calc_intersection(ground_truth,segmented):
-    """ Compute intersection between all object. The function
-        np.histogram2d takes the two flattened arrays and
-        compares the values of each position."""
+    """Calculate the intersection of two flattened arrays using histogram2d
+
+    Args:
+        ground_truth (np.array): The ground truth image array.
+        segmented (np.array): The segmented image array.
+
+    Returns:
+        ndarray: The bi-dimensional histogram of samples
+
+    """
     return np.histogram2d(ground_truth.flatten(), segmented.flatten(),\
                bins=(len(np.unique(ground_truth)), len(np.unique(segmented))))[0]
 
 def obj_count(mask):
-    """ Compute the pixel count of each object in the image. """
+    """ Compute the pixel count of each object in the mask image.
+
+    Args:
+        mask (np.array): Boolean array of objects.
+
+    Returns:
+        ndarray: The values of the histogram.
+
+    """
     return np.histogram(mask, bins = len(np.unique(mask)))[0]
 
 def calculate_iou(ground_truth, segmented):
+    """ Calculate the intersection over the union for two images
+    https://www.kaggle.com/wcukierski/example-metric-implementation
+
+    Args:
+        mask (np.array): Boolean array of objects.
+
+    Returns:
+        iou (float): intersection over union score.
+
+    """
     # calculate number of objects
     true_objects = len(np.unique(ground_truth))
     pred_objects = len(np.unique(segmented))
@@ -47,6 +72,17 @@ def calculate_iou(ground_truth, segmented):
     return iou
 
 def precision_at_iou(threshold, iou):
+    """ Calculate the precision at an iou value
+
+    Args:
+        threshold (float): precision thresholds e.g. 0.50, 0.55, 0.60, 0.65, ...
+
+    Returns:
+        tp (int): number of true positives.
+        fp (int): number of false positives.
+        fn (int): number of false negatives.
+
+    """
     # precision helper function
     matches = iou > threshold
     true_positives = np.sum(matches, axis=1) == 1
@@ -57,6 +93,16 @@ def precision_at_iou(threshold, iou):
     return tp, fp, fn
 
 def evaluate_image(ground_truth, segmented):
+    """ Evaluate the average precision fo an image
+
+    Args:
+        ground_truth (np.array): The ground truth image array.
+        segmented (np.array): The segmented image array.
+
+    Returns:
+        score (float): mean score for image.
+
+    """
     iou = calculate_iou(ground_truth, segmented)
     prec = []
 
@@ -107,6 +153,15 @@ def ap(y_true, y_pred):
 
 
 def evaluate_images(stage_num = 1):
+    """ Evaluate all images for stage in directory
+
+    Args:
+        stage_num (int): Competition stage number.
+
+    Returns:
+        scores (dataframe): pandas dataframe of image ids and scores.
+
+    """
     stage_num = str(stage_num)
     file_path = get_path('data_train_' + stage_num)
     image_ids = get_image_ids(file_path)
@@ -120,8 +175,8 @@ def evaluate_images(stage_num = 1):
         ground_truth = skimage.io.imread(ground_truth_path)
         segmented_path = label_segmented + image_id + ".png"
         segmented = skimage.io.imread(segmented_path)
-        #score = evaluate_image(ground_truth, segmented)
-        score = ap(ground_truth, segmented)
+        score = evaluate_image(ground_truth, segmented)
+        #score = ap(ground_truth, segmented)
         scores.append([image_id, score])
         print("image: " + str(idx) + " of " + str(len(image_ids)) + \
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
