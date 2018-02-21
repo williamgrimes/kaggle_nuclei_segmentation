@@ -4,7 +4,7 @@ This repository is a framework for submission for the 2018 Data Science Bowl com
 The objective is to create a single model for segmentation that works across all kinds of image modalities, no matter the size of the nuclei or the image color scheme. Such a model could be built into software that biologists use with all kinds of microscopes and eliminate the need for them to train on their individual data or provide metadata about their cell type, microscope, or resolution.
 
 ## Images
-![alt text](./output/stage1/train/montage_train.png)
+![alt text](./output/stage1/test/montage_test.png)
 
 
 ## Evaluation
