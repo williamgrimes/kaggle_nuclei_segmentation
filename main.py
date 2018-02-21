@@ -60,5 +60,5 @@ if __name__ == '__main__':
     utils.imaging.ground_truth_annotate(1)
     utils.imaging.segmented_annotate(image_type = 'train', stage_num = 1)
     utils.imaging.segmented_annotate(image_type = 'test', stage_num = 1)
-    df = utils.run_length_encoding.rle_images_in_dir(image_type = 'test', stage_num = 1)
     score = utils.evaluate.evaluate_images()
+    df = utils.run_length_encoding.rle_images_in_dir(image_type = 'test', stage_num = 1)

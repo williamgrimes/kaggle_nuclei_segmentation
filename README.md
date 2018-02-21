@@ -7,9 +7,25 @@ The objective of this competition is to create a single generalised model for se
 Below is a montage of images from the stage 1 test data to show the difference in image modalities that the model should perform on:
 ![alt text](./output/stage1/test/montage_test.png)
 
+## Running a pipeline:
+In `main.py` an example run through of the project pipeline is given by first converting images to greyscale, using an [Otsu threshold](https://en.wikipedia.org/wiki/Otsu%27s_method) to segment greyscale nuclei images, then removing connected components less than 20 pixels.
 
-## Evaluation
-[Evaluation of this competition](https://www.kaggle.com/c/data-science-bowl-2018#evaluation) using the mean average precision at different intersection over union (IoU) thresholds. The IoU of a proposed set of object pixels and a set of true object pixels is calculated.
+The `main.py` script does the following:
+1. Applies the above described segmentation method to train images and saves a labelled image. 
+2. Applies the above described segmentation method to test images and saves a labelled image. 
+3. Creates a labelled image of ground truth masks, for comparison with the segmented labelled images. 
+4. Annotates ground truth images by outlining segmentation contours on the original image.
+4. Annotates segmented training images.
+5. Annotates segmented test images.
+6. Runs the evaluation metric on the labelled ground truth against the labelled segmented images, and creates a dataframe with the results.
+7. Creates a run-length encoded `rle_submission.csv` file for submission of test segmentation to kaggle.
+
+This describes the pipeline for a complete iteration of kaggle submission. Critically, the area to be developed is the modelling that will use the ground truth masks as training data and output, labelled segmented images. These labelled segmented images will be evaluated against the ground truth labelled images and submitted to kaggle, on each iteration new annotations can be generated to show where the model is performing well and where it could be improved.
+
+For posterity trained models should be pickled in a format with initials and date in the `./models/` folder, so the work is reproducible a a notebook showing how the model was generated should also be put in the `./notebooks/` folder.
+
+## Model evaluation
+[Evaluation of this competition](https://www.kaggle.com/c/data-science-bowl-2018#evaluation) uses the mean average precision at different intersection over union (IoU) thresholds. The IoU of a proposed set of object pixels and a set of true object pixels is calculated.
 
 The metric sweeps over a range of IoU thresholds, at each point calculating an average precision value. The threshold values range from 0.5 to 0.95 with a step size of 0.05: `(0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95)`. In other words, at a threshold of 0.5, a predicted object is considered a "hit" if its intersection over union with a ground truth object is greater than 0.5.
 
@@ -21,7 +37,7 @@ Lastly, the score returned by the competition metric is the mean taken over the 
 
 We have implemented a version of this evaluation metric for offline in evaluation of the training data in the `./utils/evaluate.py` file.
 
-## Run-length encoding
+## Submission: run-length encoding
 [Run-length encoding](https://www.kaggle.com/c/data-science-bowl-2018#evaluation) is using for competition submissions to reduce the submission file size. Instead of submitting an exhaustive list of indices for your segmentation, pairs of values that contain a start position and a run length. E.g. '1 3' implies starting at pixel 1 and running a total of 3 pixels (1,2,3).
 
 The competition format requires a space delimited list of pairs. For example, '1 3 10 5' implies pixels 1,2,3,10,11,12,13,14 are to be included in the mask. The pixels are one-indexed and numbered from top to bottom, then left to right: 1 is pixel (1,1), 2 is pixel (2,1), etc.
@@ -30,13 +46,8 @@ The metric checks that the pairs are sorted, positive, and the decoded pixel val
 
 We have implemented a method to perform run-length encoding here `./utils/evaluate.py` file.
 
-## Pipeline
-
-[video](https://datasciencebowl.com/2018dsbtutorial/video)
-[DataScienceBowl.com](https://datasciencebowl.com/)
-
-Blogs:
-https://medium.com/stanford-ai-for-healthcare/how-different-are-cats-and-cells-anyway-closing-the-gap-for-deep-learning-in-histopathology-14f92d0ddb63
-
-Papers:
-	
+## Resources:
+* [DataScienceBowlVideo](https://datasciencebowl.com/2018dsbtutorial/video)
+* [DataScienceBowl.com](https://datasciencebowl.com/)
+* [Mask R-CNN paper](https://arxiv.org/abs/1703.06870)
+* [U-Net paper](https://arxiv.org/abs/1505.04597)
