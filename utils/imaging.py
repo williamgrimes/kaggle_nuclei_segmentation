@@ -3,6 +3,7 @@ import glob
 import skimage
 
 import numpy as np
+from tqdm import tqdm
 from scipy import ndimage, misc
 from skimage.color import rgba2rgb
 from skimage.io import imread, imsave, imread_collection
@@ -29,8 +30,8 @@ def get_path(directory='project'):
                 'data_train_2' : '/data/stage2_train/',
                 'data_test_2' : '/data/stage2_test/',
                 'envs' : '/data/envs/',
-                'output' : '/output/',
                 'models' : '/models/',
+                'output' : '/output/',
                 'output_train_1' : '/output/stage1/train/',
                 'output_train_1_ann_gt' : '/output/stage1/train/annotated_ground_truth/',
                 'output_train_1_ann_seg' : '/output/stage1/train/annotated_segmented/',
@@ -46,7 +47,8 @@ def get_path(directory='project'):
                 'output_train_2_lab_seg' : '/output/stage2/train/labelled_segmented/',
                 'output_test_2' : '/output/stage2/test/',
                 'output_test_2_ann_seg' : '/output/stage2/test/annotated_segmented/',
-                'output_test_2_lab_seg' : '/output/stage2/test/labelled_segmented/'
+                'output_test_2_lab_seg' : '/output/stage2/test/labelled_segmented/',
+                'submission' : '/submission/'
                 }
     path = project_dir + dir_dict[directory]
     return path
@@ -158,7 +160,7 @@ def segmented_annotate(image_type='train', stage_num = 1):
     input_path = get_path('output_' + image_type + '_' + stage_num + '_lab_seg')
     output_path = get_path('output_' + image_type + '_' + stage_num + '_ann_seg')
 
-    for idx, image_id in enumerate(image_ids):
+    for idx, image_id in tqdm(enumerate(image_ids), total=len(image_ids)):
         image_dir = file_path + image_id + '/images/' + \
                     image_id + '.png'
         image = imread(image_dir)
@@ -177,8 +179,8 @@ def segmented_annotate(image_type='train', stage_num = 1):
                                         mode='outer')
 
         imsave(output_path + image_id + '.png', image_overlay)
-        print_tuple = (idx + 1, len(image_ids), image_id)
-        print('saved image %d of %d, image: %s \n' % print_tuple)
+        #print_tuple = (idx + 1, len(image_ids), image_id)
+        #print('saved image %d of %d, image: %s \n' % print_tuple)
 
 if __name__ == '__main__':
     label_ground_truth_masks(1)

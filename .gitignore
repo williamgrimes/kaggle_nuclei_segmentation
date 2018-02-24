@@ -10,6 +10,7 @@ __pycache__/
 .ipynb_checkpoints
 
 # others
+*.h5
 *.pem
 *.swo
 *.swp

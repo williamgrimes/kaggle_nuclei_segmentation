@@ -6,6 +6,7 @@ import skimage
 
 from utils.imaging import get_path, get_image_ids
 
+from tqdm import tqdm
 from scipy import ndimage
 from skimage.color import rgb2gray
 from skimage.filters import threshold_otsu
@@ -64,14 +65,14 @@ def rle_images_in_dir(image_type='test', stage_num = 1):
     output_path = get_path('output_' + image_type + '_' + stage_num)
 
     df_all = pd.DataFrame()
-    for idx, image_id in enumerate(image_ids):
+    for idx, image_id in tqdm(enumerate(image_ids), total=len(image_ids)):
         image_dir = input_path + image_id
         image = skimage.io.imread(image_dir)
         df_image = rle_image(image, image_id)
         df_all = df_all.append(df_image, ignore_index=True)
-        print('encoded image %d of %d, image: %s \n' % \
-             (idx + 1, len(image_ids), image_id[:-4]))
-    df_all.to_csv(output_path + 'rle_submission.csv', index=None)
+        #print('encoded image %d of %d, image: %s \n' % \
+        #     (idx + 1, len(image_ids), image_id[:-4]))
+    #df_all.to_csv(output_path + 'rle_submission.csv', index=None)
     return df_all
 
 if __name__ == '__main__':

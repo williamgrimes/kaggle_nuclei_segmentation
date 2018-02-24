@@ -1,11 +1,13 @@
-import numpy as np
-import skimage.io
-import skimage.segmentation
 import os
 import sys
-import utils.imaging as imaging
-import pandas as pd
 
+import skimage.io
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+
+from keras import backend as K 
 from utils.imaging import get_path, get_image_ids
 
 
@@ -150,6 +152,27 @@ def ap(y_true, y_pred):
     fn = num_pred - tp
 
     return np.mean(tp/(tp+fp+fn))
+
+def keras_mean_iou(y_true, y_pred):
+    """ Evaluate the average precision for an image using Keras
+
+    Args:
+        y_true (np.array): The ground truth image array.
+        y_pred (np.array): The segmented image array.
+
+    Returns:
+        (float): mean score for image.
+
+    """
+    prec = []
+    for t in np.arange(0.5, 1.0, 0.05):
+        y_pred_ = tf.to_int32(y_pred > t)
+        score, up_opt = tf.metrics.mean_iou(y_true, y_pred_, 2)
+        K.get_session().run(tf.local_variables_initializer())
+        with tf.control_dependencies([up_opt]):
+            score = tf.identity(score)
+        prec.append(score)
+    return K.mean(K.stack(prec), axis=0)
 
 
 def evaluate_images(stage_num = 1):
