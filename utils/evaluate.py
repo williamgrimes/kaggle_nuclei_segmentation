@@ -1,5 +1,6 @@
 import os
 import sys
+import configparser
 
 import skimage.io
 
@@ -205,6 +206,28 @@ def evaluate_images(stage_num = 1):
               "\n" + str(image_id) + "\nscore is " + str(score) + "\n")
     df_scores = pd.DataFrame(scores, columns=cols).round(4)
     return df_scores
+
+def submit_kaggle(notebook_name, submission_path, message):
+    """ Generate submission string that can be used to submit an entry for scoring by 
+    kaggle on test data. Use python magic commands to run 
+    
+    Args:
+        notebook_name (str): Name of jupyter notebook for kaggle entry
+        submission_path (str): Path to run length encoded csv data
+        message (str): an optional message about data used for submission
+    
+    Returns:
+        submit_string (str): correctly formatted string for kaggle submission
+    
+    """
+    config = configparser.ConfigParser()
+    config.read("/home/ubuntu/.kaggle-cli/config")
+    comp = config.get('user', 'competition')
+    uname = config.get('user', 'username')
+    password = config.get('user', 'password')
+    submit_string = 'kg submit {} -u \"{}\" -p \"{}\" -c \"{}\" -m \"{}: {}\"' \
+    .format(submission_path, uname, password, comp, notebook_name, message)
+    return submit_string
 
 if __name__ == '__main__':
     score = evaluate_images()
