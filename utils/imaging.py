@@ -136,7 +136,7 @@ def ground_truth_annotate(stage_num = 1):
             mask_name = train_data_dir + image_id + "/masks/" + mask
             mask = skimage.io.imread(mask_name)
             image_overlay = mark_boundaries(image_overlay,
-                                            mask, color=(0.6,0,0),
+                                            mask, color=(0,0.6,0),
                                             outline_color=None,
                                             mode='outer')
 
@@ -181,6 +181,52 @@ def segmented_annotate(image_type='train', stage_num = 1):
         imsave(output_path + image_id + '.png', image_overlay)
         #print_tuple = (idx + 1, len(image_ids), image_id)
         #print('saved image %d of %d, image: %s \n' % print_tuple)
+
+def segmented_and_ground_truth_annotate(stage_num = 1):
+    '''
+    Annotates by marking boundaries in segmented images from labelled images, and saves output
+	for ground truth and segmented.
+
+    Args:
+        image_type: 'train' or 'test
+        stage_num: stage number 1 or 2
+
+    '''
+    stage_num = str(stage_num)
+    train_data_dir = get_path('data_train_' + stage_num)
+    image_ids = get_image_ids(train_data_dir)
+    output_path = get_path('output_train_' + stage_num + '_ann_gt')
+    input_path = get_path('output_train_' + stage_num + '_lab_seg')
+
+
+    for idx, image_id in tqdm(enumerate(image_ids), total=len(image_ids)):
+        image_dir = train_data_dir + image_id + "/images/" + \
+                    image_id + ".png"
+        image = skimage.io.imread(image_dir)
+        image = rgba2rgb(image)
+
+        masks = os.listdir(train_data_dir + image_id + "/masks/")
+
+        image_overlay = image
+        for mask in masks:
+            mask_name = train_data_dir + image_id + "/masks/" + mask
+            mask = skimage.io.imread(mask_name)
+            image_overlay = mark_boundaries(image_overlay,
+                                            mask, color=(0,0.6,0),
+                                            outline_color=None,
+                                            mode='outer')
+
+        labelled_dir = input_path + image_id + '.png'
+        labelled_image = misc.imread(labelled_dir)
+
+        for i in range(1, labelled_image.max()+1):
+            mask = (labelled_image==i)
+            image_overlay = mark_boundaries(image_overlay,
+                                        mask, color=(0.6,0,0),
+                                        outline_color=None,
+                                        mode='outer')
+
+        imsave(output_path + image_id + '.png', image_overlay)
 
 if __name__ == '__main__':
     label_ground_truth_masks(1)
